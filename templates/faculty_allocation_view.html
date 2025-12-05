@@ -6,31 +6,39 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Your Allocations</h1>
+
+    <h1>Your Invigilation Allocations</h1>
 
     {% if allocations %}
-        <table border="1">
-            <tr>
-                <th>Exam Name</th>
-                <th>Date</th>
-                <th>Hall</th>
-                <th>Time Slot</th>
-                <th>Status</th>
-            </tr>
-            {% for alloc in allocations %}
-            <tr>
-                <td>{{ alloc[0] }}</td>
-                <td>{{ alloc[1] }}</td>
-                <td>{{ alloc[2] }}</td>
-                <td>{{ alloc[3] }}</td>
-                <td>{{ alloc[4] }}</td>
-            </tr>
-            {% endfor %}
+        <table border="1" cellpadding="8">
+            <thead>
+                <tr>
+                    <th>Exam Name</th>
+                    <th>Date</th>
+                    <th>Hall</th>
+                    <th>Time Slot</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for alloc in allocations %}
+                <tr>
+                    <td>{{ alloc.exam_name }}</td>
+                    <td>{{ alloc.exam_date }}</td>
+                    <td>{{ alloc.hall }}</td>
+                    <td>{{ alloc.time_slot }}</td>
+                    <td>{{ alloc.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     {% else %}
         <p>No allocations assigned yet.</p>
     {% endif %}
 
+    <br>
     <a href="{{ url_for('faculty.dashboard') }}">Back to Dashboard</a>
+
 </body>
 </html>
