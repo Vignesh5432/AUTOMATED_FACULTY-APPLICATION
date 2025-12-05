@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Faculty Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Welcome, {{ session['faculty_name'] }}</h1>
+
+    <h2>Your Upcoming Allocations</h2>
+    {% if allocations %}
+        <table border="1">
+            <tr>
+                <th>Exam Name</th>
+                <th>Date</th>
+                <th>Hall</th>
+                <th>Time Slot</th>
+                <th>Status</th>
+            </tr>
+            {% for alloc in allocations %}
+            <tr>
+                <td>{{ alloc[0] }}</td>
+                <td>{{ alloc[1] }}</td>
+                <td>{{ alloc[2] }}</td>
+                <td>{{ alloc[3] }}</td>
+                <td>{{ alloc[4] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No upcoming allocations.</p>
+    {% endif %}
+
+    <a href="{{ url_for('faculty.availability') }}">Submit Availability</a> |
+    <a href="{{ url_for('faculty.allocation_view') }}">View All Allocations</a> |
+    <a href="{{ url_for('faculty.allocation_status') }}">Allocation Status</a> |
+    <a href="{{ url_for('faculty.substitute_faculty') }}">Substitute Duties</a> |
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
+</body>
+</html>

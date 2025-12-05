@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+  }
+
+  body {
+    background: url("https://www.kgkite.ac.in/wp-content/uploads/2021/05/infra-gal-large6.jpg?x92953") 
+    no-repeat center center/cover;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    width: 400px;
+    padding: 35px;
+    border-radius: 20px;
+    border: 5px solid rgb(24, 12, 126);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(30px);
+    box-shadow: 0 10px 30px rgba(150, 12, 76, 0.25);
+    text-align: center;
+    color: #fff;
+  }
+
+  h2 {
+    margin-bottom: 20px;
+  }
+
+  .button-group button {
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    padding: 8px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .button-group button.active {
+    background: white;
+    color: black;
+  }
+
+  form {
+    display: none;
+    margin-top: 15px;
+  }
+
+  form.active {
+    display: block;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: none;
+  }
+
+  .login-btn {
+    padding: 12px;
+    width: 100%;
+    background: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Namma Exam</h2>
+
+  <div class="button-group">
+    <button id="facultyBtn" class="active">Faculty</button>
+    <button id="studentBtn">Student</button>
+    <button id="adminBtn">Admin</button>
+  </div>
+
+  <!-- ✅ FACULTY LOGIN -->
+  <form id="facultyForm" class="active" method="POST" action="/login">
+    <h3>Faculty Login</h3>
+    <input name="email" placeholder="Faculty Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <input type="hidden" name="role" value="faculty">
+    <button type="submit" class="login-btn">Login</button>
+  </form>
+
+  <!-- ✅ STUDENT LOGIN -->
+  <form id="studentForm" method="POST" action="/login">
+    <h3>Student Login</h3>
+    <input name="email" placeholder="Student Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <input type="hidden" name="role" value="student">
+    <button type="submit" class="login-btn">Login</button>
+  </form>
+
+  <!-- ✅ ADMIN LOGIN -->
+  <form id="adminForm" method="POST" action="/login">
+    <h3>Admin Login</h3>
+    <input name="email" placeholder="Admin Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <input type="hidden" name="role" value="admin">
+    <button type="submit" class="login-btn">Login</button>
+  </form>
+</div>
+
+<script>
+const facultyBtn = document.getElementById('facultyBtn');
+const studentBtn = document.getElementById('studentBtn');
+const adminBtn = document.getElementById('adminBtn');
+
+const facultyForm = document.getElementById('facultyForm');
+const studentForm = document.getElementById('studentForm');
+const adminForm = document.getElementById('adminForm');
+
+function activate(form, btn){
+  [facultyForm, studentForm, adminForm].forEach(f=>f.classList.remove('active'));
+  [facultyBtn, studentBtn, adminBtn].forEach(b=>b.classList.remove('active'));
+  form.classList.add('active');
+  btn.classList.add('active');
+}
+
+facultyBtn.onclick = () => activate(facultyForm, facultyBtn);
+studentBtn.onclick = () => activate(studentForm, studentBtn);
+adminBtn.onclick = () => activate(adminForm, adminBtn);
+</script>
+
+</body>
+</html>

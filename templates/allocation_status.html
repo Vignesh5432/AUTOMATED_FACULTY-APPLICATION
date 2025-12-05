@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Allocation Status</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Your Allocation Status</h1>
+
+    {% if stats %}
+        <table border="1">
+            <tr>
+                <th>Assigned</th>
+                <th>Completed</th>
+                <th>Pending</th>
+            </tr>
+            <tr>
+                <td>{{ stats[0] or 0 }}</td>
+                <td>{{ stats[1] or 0 }}</td>
+                <td>{{ stats[2] or 0 }}</td>
+            </tr>
+        </table>
+    {% else %}
+        <p>No allocations found.</p>
+    {% endif %}
+
+    <a href="{{ url_for('faculty.dashboard') }}">Back to Dashboard</a>
+</body>
+</html>

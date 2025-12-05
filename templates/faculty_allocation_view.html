@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Faculty Allocation View</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Your Allocations</h1>
+
+    {% if allocations %}
+        <table border="1">
+            <tr>
+                <th>Exam Name</th>
+                <th>Date</th>
+                <th>Hall</th>
+                <th>Time Slot</th>
+                <th>Status</th>
+            </tr>
+            {% for alloc in allocations %}
+            <tr>
+                <td>{{ alloc[0] }}</td>
+                <td>{{ alloc[1] }}</td>
+                <td>{{ alloc[2] }}</td>
+                <td>{{ alloc[3] }}</td>
+                <td>{{ alloc[4] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No allocations assigned yet.</p>
+    {% endif %}
+
+    <a href="{{ url_for('faculty.dashboard') }}">Back to Dashboard</a>
+</body>
+</html>
