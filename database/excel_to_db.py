@@ -1,8 +1,8 @@
 import pandas as pd
-from db_connect import get_db_connection
+from db_connect import get_db_connection   # SQLite connection
 
 # ✅ Excel File Name
-excel_file = "faculty_data.xlsx"
+excel_file = "database/faculty_data.xlsx"
 
 # ✅ Read Excel
 df = pd.read_excel(excel_file)
@@ -20,9 +20,22 @@ for index, row in df.iterrows():
     password = str(row['Password (Encrypted)\n']).strip()
     email = str(row['Email']).strip()
 
-    # ✅ Insert into USERS table
+    # ✅ FIX: Normalize designation for SQLite CHECK constraint
+    designation_map = {
+        "hod": "HOD",
+        "h.o.d": "HOD",
+        "professor": "Professor",
+        "assistant professor": "Assistant Professor",
+        "asst prof": "Assistant Professor",
+        "ap": "Assistant Professor"
+    }
+
+    designation_key = designation.lower()
+    designation = designation_map.get(designation_key, "Assistant Professor")
+
+    # ✅ Insert into USERS table (SQLite version)
     cursor.execute(
-        "INSERT INTO users (email, password, role) VALUES (%s, %s, %s)",
+        "INSERT INTO users (email, password, role) VALUES (?, ?, ?)",
         (email, password, "faculty")
     )
 
@@ -33,7 +46,7 @@ for index, row in df.iterrows():
         """
         INSERT INTO faculty 
         (user_id, faculty_name, department, designation, subjects_handled)
-        VALUES (%s, %s, %s, %s, %s)
+        VALUES (?, ?, ?, ?, ?)
         """,
         (user_id, faculty_name, dept, designation, year_handling)
     )

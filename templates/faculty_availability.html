@@ -1,50 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Faculty Availability</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Submit Your Availability</h1>
+{% extends "base.html" %}
+{% block title %}Availability{% endblock %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="{{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+{% block content %}
+<h2 class="page-title">Availability</h2>
 
-    <form method="POST">
-        <label for="date">Date:</label>
-        <input type="date" id="date" name="date" required>
-        <label for="time_slot">Time Slot:</label>
-        <select id="time_slot" name="time_slot" required>
-            <option value="Morning">Morning</option>
-            <option value="Evening">Evening</option>
-        </select>
-        <button type="submit">Submit</button>
-    </form>
+<table>
+<tr>
+    <th>Date</th>
+    <th>Status</th>
+</tr>
 
-    <h2>Your Existing Availability</h2>
-    {% if availabilities %}
-        <table border="1">
-            <tr>
-                <th>Date</th>
-                <th>Time Slot</th>
-            </tr>
-            {% for avail in availabilities %}
-            <tr>
-                <td>{{ avail[0] }}</td>
-                <td>{{ avail[1] }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p>No availability submitted yet.</p>
-    {% endif %}
+{% for row in availabilities %}
+<tr>
+    <td>{{ row.availability_date }}</td>
+    <td>{{ row.status }}</td>
+</tr>
+{% endfor %}
+</table>
 
-    <a href="{{ url_for('faculty.dashboard') }}">Back to Dashboard</a>
-</body>
-</html>
+{% endblock %}

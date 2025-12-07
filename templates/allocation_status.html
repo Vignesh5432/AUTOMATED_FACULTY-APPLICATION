@@ -1,30 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Allocation Status</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Your Allocation Status</h1>
+{% extends "base.html" %}
 
-    {% if stats %}
-        <table border="1">
-            <tr>
-                <th>Assigned</th>
-                <th>Completed</th>
-                <th>Pending</th>
-            </tr>
-            <tr>
-                <td>{{ stats[0] or 0 }}</td>
-                <td>{{ stats[1] or 0 }}</td>
-                <td>{{ stats[2] or 0 }}</td>
-            </tr>
-        </table>
-    {% else %}
-        <p>No allocations found.</p>
-    {% endif %}
+{% block title %}Allocation Status{% endblock %}
 
-    <a href="{{ url_for('faculty.dashboard') }}">Back to Dashboard</a>
-</body>
-</html>
+{% block content %}
+<div class="page-header">
+    <h2>📊 Allocation Status</h2>
+    <p>Overview of your invigilation status</p>
+</div>
+
+<div class="status-grid">
+
+    <div class="status-card confirmed">
+        <h3>{{ stats.confirmed }}</h3>
+        <p>Confirmed</p>
+    </div>
+
+    <div class="status-card pending">
+        <h3>{{ stats.pending }}</h3>
+        <p>Pending</p>
+    </div>
+
+    <div class="status-card cancelled">
+        <h3>{{ stats.cancelled }}</h3>
+        <p>Cancelled</p>
+    </div>
+
+</div>
+{% endblock %}

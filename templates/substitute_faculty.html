@@ -1,42 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Substitute Faculty</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Substitute Duties</h1>
+{% extends "base.html" %}
+{% block title %}Substitutes{% endblock %}
 
-    {% if substitutions %}
-        <table border="1">
-            <tr>
-                <th>Exam Name</th>
-                <th>Date</th>
-                <th>Hall</th>
-                <th>Time Slot</th>
-                <th>Substitute Assigned</th>
-            </tr>
-            {% for sub in substitutions %}
-            <tr>
-                <td>{{ sub[0] }}</td>
-                <td>{{ sub[1] }}</td>
-                <td>{{ sub[2] }}</td>
-                <td>{{ sub[3] }}</td>
-                <td>
-                    {% if sub[4] %}
-                        {{ sub[4] }}
-                    {% else %}
-                        Not Assigned
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p>No substitute duties.</p>
-    {% endif %}
+{% block content %}
+<h2 class="page-title">Substitute History</h2>
 
-    <a href="{{ url_for('faculty.dashboard') }}">Back to Dashboard</a>
-</body>
-</html>
+<table>
+<tr>
+    <th>Date</th>
+    <th>Hall</th>
+    <th>Status</th>
+</tr>
+
+{% for row in substitutions %}
+<tr>
+    <td>{{ row.exam_date }}</td>
+    <td>{{ row.hall_no }}</td>
+    <td>{{ row.status }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

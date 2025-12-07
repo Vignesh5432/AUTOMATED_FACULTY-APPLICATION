@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Faculty Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <h2 class="logo">Faculty Panel</h2>
+        <a href="/faculty/dashboard">Dashboard</a>
+        <a href="/faculty/availability">Availability</a>
+        <a href="/faculty/allocation_view">📋 Allocations</a>  
+
+        <a href="/faculty/allocation_status">Status</a>
+        <a href="/faculty/substitute">Substitutes</a>
+        <a href="/logout" class="logout">Logout</a>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+</body>
+</html>

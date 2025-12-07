@@ -5,28 +5,31 @@
 <title>Login</title>
 
 <style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Poppins;}
 body{
-  background:#0a0a3a;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  color:white;
-  font-family:Arial;
+background:url("https://www.kgkite.ac.in/wp-content/uploads/2021/05/infra-gal-large6.jpg") no-repeat center/cover;
+height:100vh;display:flex;justify-content:center;align-items:center;
 }
 .container{
-  width:400px;
-  background:white;
-  padding:30px;
-  border-radius:10px;
-  text-align:center;
-  color:black;
+width:400px;padding:35px;border-radius:20px;
+border:5px solid rgb(24,12,126);
+background:rgba(255,255,255,0.15);backdrop-filter:blur(30px);
+text-align:center;color:#fff;
 }
-button{padding:10px;width:100%;margin-top:10px;}
-input,select{
-  width:100%;
-  padding:10px;
-  margin:8px 0;
+.button-group{display:flex;justify-content:center;gap:10px;margin-bottom:25px;}
+.button-group button{border:2px solid #fff;background:transparent;color:#fff;padding:8px 18px;border-radius:10px;}
+.button-group button.active{background:#fff;color:#333;}
+form{display:none;}
+form.active{display:block;}
+input{
+width:100%;padding:12px;margin:10px 0;
+border-radius:10px;border:none;text-align:center;
+}
+button.login-btn{
+background:#fff;width:100%;padding:12px;border-radius:10px;font-weight:bold;
+}
+.flash{
+background:#ff4444;color:white;padding:10px;border-radius:10px;margin-bottom:10px;
 }
 </style>
 </head>
@@ -34,25 +37,67 @@ input,select{
 <body>
 
 <div class="container">
-<h2>Namma Exam Login</h2>
 
-<form action="/login" method="POST">
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, msg in messages %}
+<div class="flash">{{ msg }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 
-<select name="role" required>
-<option value="faculty">Faculty</option>
-<option value="student">Student</option>
-<option value="admin">Admin</option>
-</select>
+<h2 style="color:rgb(23,7,94)">AUTOMATED FACULTY ALLOTMENT</h2>
+
+<!-- ✅ FACULTY + ADMIN TOGGLE -->
+<div class="button-group">
+<button id="facultyBtn" class="active">Faculty</button>
+<button id="adminBtn">Admin</button>
+</div>
+
+<!-- ✅ Faculty Login -->
+<form id="facultyForm" class="active" action="/login" method="POST">
+<input type="hidden" name="role" value="faculty">
+<h3>Faculty Login</h3>
 
 <input type="email" name="email" placeholder="Email" required>
-
 <input type="password" name="password" placeholder="Password" required>
 
-<button type="submit">Login</button>
+<button class="login-btn">Login</button>
+</form>
 
+<!-- ✅ Admin Login -->
+<form id="adminForm" action="/login" method="POST">
+<input type="hidden" name="role" value="admin">
+<h3>Admin Login</h3>
+
+<input type="email" name="email" placeholder="Admin Email" required>
+<input type="password" name="password" placeholder="Admin Password" required>
+
+<button class="login-btn">Login</button>
 </form>
 
 </div>
+
+<script>
+const facultyBtn=document.getElementById('facultyBtn');
+const adminBtn=document.getElementById('adminBtn');
+const facultyForm=document.getElementById('facultyForm');
+const adminForm=document.getElementById('adminForm');
+
+facultyBtn.onclick=()=>{
+facultyForm.classList.add('active');
+adminForm.classList.remove('active');
+facultyBtn.classList.add('active');
+adminBtn.classList.remove('active');
+};
+
+adminBtn.onclick=()=>{
+adminForm.classList.add('active');
+facultyForm.classList.remove('active');
+adminBtn.classList.add('active');
+facultyBtn.classList.remove('active');
+};
+</script>
 
 </body>
 </html>

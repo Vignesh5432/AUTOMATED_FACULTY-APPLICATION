@@ -1,82 +1,81 @@
--- ✅ CREATE DATABASE
-CREATE DATABASE IF NOT EXISTS exam_management;
-USE exam_management;
+-- ✅ SQLITE DOES NOT USE CREATE DATABASE OR USE
+-- The database is automatically created as the file: exam_management.db
 
 -- ✅ USERS TABLE (For Login)
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'faculty', 'student') NOT NULL
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT CHECK(role IN ('admin', 'faculty', 'student')) NOT NULL
 );
 
 -- ✅ FACULTY MASTER TABLE (From Your Excel)
-CREATE TABLE faculty (
-    faculty_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    faculty_name VARCHAR(100),
-    department VARCHAR(100),
-    designation ENUM('HOD', 'Professor', 'Assistant Professor'),
+CREATE TABLE IF NOT EXISTS faculty (
+    faculty_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    faculty_name TEXT,
+    department TEXT,
+    designation TEXT CHECK(designation IN ('HOD', 'Professor', 'Assistant Professor')),
     subjects_handled TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- ✅ FACULTY AVAILABILITY
-CREATE TABLE faculty_availability (
-    availability_id INT AUTO_INCREMENT PRIMARY KEY,
-    faculty_id INT,
+CREATE TABLE IF NOT EXISTS faculty_availability (
+    availability_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    faculty_id INTEGER,
     exam_date DATE,
-    is_available BOOLEAN DEFAULT TRUE,
+    is_available INTEGER DEFAULT 1,   -- 1 = TRUE, 0 = FALSE
     reason TEXT,
     FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id) ON DELETE CASCADE
 );
 
 -- ✅ EXAMS TABLE (SEMESTER + INTERNALS)
-CREATE TABLE exams (
-    exam_id INT AUTO_INCREMENT PRIMARY KEY,
-    course_id VARCHAR(50),
-    exam_type ENUM('semester', 'internal'),
+CREATE TABLE IF NOT EXISTS exams (
+    exam_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    course_id TEXT,
+    exam_type TEXT CHECK(exam_type IN ('semester', 'internal')),
     exam_date DATE,
-    session ENUM('forenoon', 'afternoon', 'both')
+    session TEXT CHECK(session IN ('forenoon', 'afternoon', 'both'))
 );
 
 -- ✅ HALL ALLOCATION (FROM STUDENT TEAM)
-CREATE TABLE hall_allocation (
-    hall_id INT AUTO_INCREMENT PRIMARY KEY,
-    hall_number VARCHAR(50),
-    exam_id INT,
+CREATE TABLE IF NOT EXISTS hall_allocation (
+    hall_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hall_number TEXT,
+    exam_id INTEGER,
     departments TEXT,
     FOREIGN KEY (exam_id) REFERENCES exams(exam_id) ON DELETE CASCADE
 );
 
 -- ✅ INVIGILATOR ALLOCATION
-CREATE TABLE invigilator_allocation (
-    allocation_id INT AUTO_INCREMENT PRIMARY KEY,
-    faculty_id INT,
-    hall_id INT,
-    exam_id INT,
-    duty_role ENUM('invigilator', 'squad'),
+CREATE TABLE IF NOT EXISTS invigilator_allocation (
+    allocation_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    faculty_id INTEGER,
+    hall_id INTEGER,
+    exam_id INTEGER,
+    duty_role TEXT CHECK(duty_role IN ('invigilator', 'squad')),
     FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id),
     FOREIGN KEY (hall_id) REFERENCES hall_allocation(hall_id),
     FOREIGN KEY (exam_id) REFERENCES exams(exam_id)
 );
 
 -- ✅ SUBSTITUTE FACULTY (EMERGENCY POOL)
-CREATE TABLE substitute_faculty (
-    substitute_id INT AUTO_INCREMENT PRIMARY KEY,
-    faculty_id INT,
+CREATE TABLE IF NOT EXISTS substitute_faculty (
+    substitute_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    faculty_id INTEGER,
     exam_date DATE,
-    is_used BOOLEAN DEFAULT FALSE,
+    is_used INTEGER DEFAULT 0,   -- 0 = FALSE, 1 = TRUE
     FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id)
 );
 
 -- ✅ REALLOCATION LOGS
-CREATE TABLE reallocation_logs (
-    log_id INT AUTO_INCREMENT PRIMARY KEY,
-    replaced_faculty_id INT,
-    substitute_faculty_id INT,
-    exam_id INT,
-    hall_id INT,
+CREATE TABLE IF NOT EXISTS reallocation_logs (
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    replaced_faculty_id INTEGER,
+    substitute_faculty_id INTEGER,
+    exam_id INTEGER,
+    hall_id INTEGER,
     reason TEXT,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );

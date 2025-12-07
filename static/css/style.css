@@ -1,80 +1,138 @@
 body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to right, #1e3c72, #2a5298);
     margin: 0;
-    padding: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: #f4f7fb;
 }
 
-h1, h2 {
+.layout {
+    display: flex;
+    height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #1e3c72, #2a5298);
+    color: white;
+    padding: 20px;
+}
+
+.logo {
     text-align: center;
-    color: white;
+    font-size: 22px;
+    margin-bottom: 30px;
 }
 
-.login-container {
-    width: 350px;
-    background: white;
-    padding: 30px;
-    margin: 120px auto;
-    border-radius: 10px;
-    box-shadow: 0 0 10px black;
-}
-
-input, select {
-    width: 100%;
-    padding: 9px;
+.sidebar a {
+    display: block;
+    padding: 12px;
     margin: 8px 0;
-    border-radius: 5px;
-    border: 1px solid gray;
-}
-
-button {
-    width: 100%;
-    padding: 10px;
-    background: #1e3c72;
+    text-decoration: none;
     color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    border-radius: 6px;
+    transition: 0.3s;
 }
 
-button:hover {
-    background: #16305b;
+.sidebar a:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
-table {
-    width: 90%;
-    margin: 20px auto;
+.logout {
+    margin-top: 40px;
+    background: #e74c3c;
+}
+
+/* MAIN CONTENT */
+.main-content {
+    flex: 1;
+    padding: 30px;
+}
+
+/* PAGE TITLE */
+.page-title {
+    font-size: 26px;
+    margin-bottom: 20px;
+}
+
+/* CARD */
+.card {
     background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* TABLE */
+table {
+    width: 100%;
     border-collapse: collapse;
 }
 
-table th, table td {
-    padding: 10px;
-    border: 1px solid black;
-    text-align: center;
-}
-
-a {
-    display: block;
-    text-align: center;
-    margin-top: 15px;
+th {
+    background: #2a5298;
     color: white;
-    text-decoration: none;
+    padding: 10px;
 }
 
-.alert {
+td {
     padding: 10px;
-    margin-bottom: 10px;
     text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+/* STATUS BADGE */
+.status-badge {
+    padding: 5px 10px;
     border-radius: 5px;
-}
-
-.success {
-    background-color: #4CAF50;
+    background: #2ecc71;
     color: white;
 }
 
-.error {
-    background-color: red;
+/* NO DATA */
+.no-data {
+    text-align: center;
+    color: gray;
+    margin-top: 20px;
+}
+/* ========== STATUS DASHBOARD ========== */
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.status-card {
+    padding: 30px;
+    border-radius: 14px;
     color: white;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
+}
+
+.status-card:hover {
+    transform: translateY(-5px);
+}
+
+.status-card p {
+    font-size: 16px;
+    opacity: 0.9;
+    margin-top: 10px;
+}
+
+/* Soft professional colors */
+.status-card.confirmed {
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+}
+
+.status-card.pending {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+.status-card.cancelled {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
 }

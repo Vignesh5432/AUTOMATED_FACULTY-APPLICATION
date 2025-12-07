@@ -1,7 +1,7 @@
-# allocation/reallocation_logic.py
 from . import allocation_bp
 from flask import request, jsonify
 from database.db_connect import get_db_connection
+import mysql.connector
 
 @allocation_bp.route('/reallocate/replace', methods=['POST'])
 def replace_absent_endpoint():
@@ -10,18 +10,21 @@ def replace_absent_endpoint():
     {
       "absent_faculty_id": "F015",
       "exam_date": "2025-10-10",
-      "session": "Forenoon",
+      "session": "FN",
       "hall_id": 101
     }
     """
     data = request.get_json() or {}
+
     absent = data.get('absent_faculty_id')
     exam_date = data.get('exam_date')
     session = data.get('session')
     hall_id = data.get('hall_id')
 
     if not all([absent, exam_date, session, hall_id]):
-        return jsonify({"error":"absent_faculty_id, exam_date, session, hall_id required"}), 400
+        return jsonify({
+            "error": "absent_faculty_id, exam_date, session, hall_id required"
+        }), 400
 
     try:
         result = replace_absent_with_substitute(absent, exam_date, session, hall_id)
@@ -29,84 +32,125 @@ def replace_absent_endpoint():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 def replace_absent_with_substitute(absent_faculty_id, exam_date, session, hall_id):
-    conn = get_db_connection()
-    if not conn:
-        raise Exception("DB connection failed")
-    cursor = conn.cursor(dictionary=True)
+    conn = None
 
-    # 1) mark absent in faculty_availability (optional - but ensure record)
-    cursor.execute("""
-        INSERT INTO faculty_availability (faculty_id, unavailable_date, reason)
-        VALUES (%s, %s, %s)
-    """, (absent_faculty_id, exam_date, "Marked absent via reconciliation"))
-    conn.commit()
+    try:
+        conn = get_db_connection()
+        conn.start_transaction()
+        cursor = conn.cursor(dictionary=True)
 
-    # 2) find substitute faculty from substitute_faculty table who is reserved and available
-    cursor.execute("""
-        SELECT sf.faculty_id, f.subject_1, f.subject_2, f.subject_3
-        FROM substitute_faculty sf
-        JOIN faculty f ON sf.faculty_id = f.faculty_id
-        WHERE sf.is_reserved = 1 AND f.is_available = 1
-    """)
-    candidates = cursor.fetchall()
-
-    if not candidates:
-        cursor.close()
-        conn.close()
-        return {"error": "No substitute faculty reserved/available"}
-
-    # fetch hall courses to enforce subject mismatch
-    cursor.execute("""
-        SELECT GROUP_CONCAT(course_id) AS courses 
-        FROM hall_allocation
-        WHERE hall_id = %s AND exam_date = %s AND session = %s
-    """, (hall_id, exam_date, session))
-    row = cursor.fetchone()
-    hall_courses = set()
-    if row and row['courses']:
-        hall_courses = set(row['courses'].split(','))
-
-    selected = None
-    for c in candidates:
-        subj_set = set()
-        for s in (c['subject_1'], c['subject_2'], c['subject_3']):
-            if s:
-                subj_set.add(s)
-        # subject mismatch check
-        if hall_courses & subj_set:
-            continue
-        # ensure not already assigned same session
+        # ✅ 1) Mark faculty as Unavailable for that date
         cursor.execute("""
-            SELECT COUNT(*) AS cnt FROM invigilator_allocation
-            WHERE faculty_id = %s AND exam_date = %s AND session = %s
-        """, (c['faculty_id'], exam_date, session))
-        if cursor.fetchone()['cnt'] > 0:
-            continue
+            INSERT INTO faculty_availability (faculty_id, availability_date, status)
+            VALUES (
+                (SELECT id FROM faculty WHERE faculty_id = %s),
+                %s,
+                'Unavailable'
+            )
+            ON DUPLICATE KEY UPDATE status = 'Unavailable'
+        """, (absent_faculty_id, exam_date))
 
-        selected = c
-        break
+        # ✅ Also disable absent faculty globally for safety
+        cursor.execute("""
+            UPDATE faculty SET is_available = 0
+            WHERE faculty_id = %s
+        """, (absent_faculty_id,))
 
-    if not selected:
-        cursor.close()
-        conn.close()
-        return {"error":"No eligible substitute found (subject/availability conflict)"}
+        # ✅ 2) Get hall subject mapping
+        cursor.execute("""
+            SELECT GROUP_CONCAT(fs.course_code) AS courses
+            FROM allocations a
+            JOIN faculty_subjects fs ON fs.faculty_id = a.faculty_id
+            WHERE a.hall_id = %s 
+              AND a.allocation_date = %s 
+              AND a.session = %s
+        """, (hall_id, exam_date, session))
 
-    # 3) perform update in invigilator_allocation: replace absent faculty
-    cursor.execute("""
-        UPDATE invigilator_allocation
-        SET faculty_id = %s
-        WHERE faculty_id = %s AND exam_date = %s AND session = %s AND hall_id = %s
-    """, (selected['faculty_id'], absent_faculty_id, exam_date, session, hall_id))
-    conn.commit()
+        row = cursor.fetchone()
+        hall_courses = set(row['courses'].split(',')) if row and row['courses'] else set()
 
-    # 4) mark substitute as no longer reserved (optionally)
-    cursor.execute("""
-        UPDATE substitute_faculty SET is_reserved = 0 WHERE faculty_id = %s
-    """, (selected['faculty_id'],))
-    conn.commit()
+        # ✅ 3) Fetch all eligible available faculty
+        cursor.execute("""
+            SELECT 
+                f.id,
+                f.faculty_id,
+                f.name,
+                f.max_duties,
+                (SELECT COUNT(*) FROM allocations WHERE faculty_id = f.id) AS duties_assigned,
+                GROUP_CONCAT(fs.course_code) AS subjects_handled
+            FROM faculty f
+            JOIN faculty_availability fa ON f.id = fa.faculty_id
+            LEFT JOIN faculty_subjects fs ON f.id = fs.faculty_id
+            WHERE
+                fa.availability_date = %s AND
+                (fa.status = 'Available' OR fa.status = 'Both') AND
+                f.id != (SELECT id FROM faculty WHERE faculty_id = %s)
+            GROUP BY f.id, f.faculty_id, f.name, f.max_duties
+            HAVING duties_assigned < max_duties
+        """, (exam_date, absent_faculty_id))
 
-    cursor.close()
-    conn.close()
+        candidates = cursor.fetchall()
 
-    return {"ok": True, "substitute_assigned": selected['faculty_id']}
+        selected = None
+        for faculty in candidates:
+
+            subjects = set(faculty['subjects_handled'].split(',')) if faculty['subjects_handled'] else set()
+
+            # ✅ Subject conflict protection
+            if hall_courses & subjects:
+                continue
+
+            # ✅ No duplicate same-session assignment
+            cursor.execute("""
+                SELECT COUNT(*) FROM allocations
+                WHERE faculty_id = %s 
+                  AND allocation_date = %s 
+                  AND session = %s
+            """, (faculty['id'], exam_date, session))
+
+            count = cursor.fetchone()[0]
+            if count > 0:
+                continue
+
+            selected = faculty
+            break
+
+        if not selected:
+            conn.rollback()
+            return {"error": "No eligible substitute found"}
+
+        # ✅ 4) Replace the allocation
+        cursor.execute("""
+            UPDATE allocations
+            SET faculty_id = %s
+            WHERE faculty_id = (SELECT id FROM faculty WHERE faculty_id = %s)
+              AND allocation_date = %s
+              AND session = %s
+              AND hall_id = %s
+        """, (
+            selected['id'],
+            absent_faculty_id,
+            exam_date,
+            session,
+            hall_id
+        ))
+
+        conn.commit()
+
+        return {
+            "ok": True,
+            "substitute_assigned": selected['faculty_id'],
+            "name": selected['name']
+        }
+
+    except mysql.connector.Error as err:
+        if conn:
+            conn.rollback()
+        raise Exception(f"Database error: {err}")
+
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()

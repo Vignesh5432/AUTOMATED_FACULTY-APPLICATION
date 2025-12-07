@@ -1,36 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Faculty Allocation View</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Your Allocations</h1>
+{% extends "base.html" %}
+{% block title %}My Allocations{% endblock %}
 
-    {% if allocations %}
-        <table border="1">
-            <tr>
-                <th>Exam Name</th>
-                <th>Date</th>
-                <th>Hall</th>
-                <th>Time Slot</th>
-                <th>Status</th>
-            </tr>
-            {% for alloc in allocations %}
-            <tr>
-                <td>{{ alloc[0] }}</td>
-                <td>{{ alloc[1] }}</td>
-                <td>{{ alloc[2] }}</td>
-                <td>{{ alloc[3] }}</td>
-                <td>{{ alloc[4] }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p>No allocations assigned yet.</p>
-    {% endif %}
+{% block content %}
+<h2 class="page-title">My Allocations</h2>
 
-    <a href="{{ url_for('faculty.dashboard') }}">Back to Dashboard</a>
-</body>
-</html>
+<table>
+<tr>
+    <th>Date</th>
+    <th>Session</th>
+    <th>Hall</th>
+    <th>Status</th>
+</tr>
+
+{% for alloc in allocations %}
+<tr>
+    <td>{{ alloc.exam_date }}</td>
+    <td>{{ alloc.session }}</td>
+    <td>{{ alloc.hall_no }}</td>
+    <td>
+        {% if alloc.status == "Confirmed" %}
+            <span class="status-confirmed">Confirmed</span>
+        {% elif alloc.status == "Pending" %}
+            <span class="status-pending">Pending</span>
+        {% else %}
+            <span class="status-cancelled">Cancelled</span>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}
